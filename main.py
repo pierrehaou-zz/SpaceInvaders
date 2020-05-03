@@ -24,7 +24,8 @@ player_x_change = 0
 enemyImg = pygame.image.load('enemy.png')
 enemy_x = randint(0, 800)  # sets the x coordinate of the enemy image
 enemy_y = randint(50, 150 )  # sets the y coordinate of the enemy image
-enemy_x_change = 0
+enemy_x_change = 0.3
+enemy_y_change = 30
 
 
 def player(x, y):
@@ -65,6 +66,16 @@ while running:
         player_x = 0
     elif player_x >= 736:
         player_x = 736
+
+    enemy_x += enemy_x_change
+
+    # setting movement for enemy
+    if enemy_x <= 0:
+        enemy_x_change = 0.3
+        enemy_y += enemy_y_change
+    elif enemy_x >= 736:
+        enemy_x_change = -0.3
+        enemy_y += enemy_y_change
 
     player(player_x, player_y)  # This must be after the color fill!
     enemy(enemy_x, enemy_y)
