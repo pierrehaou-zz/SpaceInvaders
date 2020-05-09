@@ -18,18 +18,36 @@ pygame.display.set_caption("Pierre's Space Invaders")
 icon = pygame.image.load("spaceship.png")
 pygame.display.set_icon(icon)
 
+# Score
+score_value = 0
+font = pygame.font.Font('freesansbold.ttf', 32)
+text_x = 10
+text_y = 10
+
+def show_score(x,y):
+    score = font.render(f"Score : {score_value}", True, (255, 255, 255))
+    screen.blit(score, (x, y))
+
 # Creating Player
 playerImg = pygame.image.load('aircraft.png')
 player_x = 370  # sets the x coordinate of the player image
 player_y = 480  # sets the y coordinate of the player image
 player_x_change = 0
 
-# Creating enemy
-enemyImg = pygame.image.load('enemy.png')
-enemy_x = randint(0, 736)  # sets the x coordinate of the enemy image
-enemy_y = randint(50, 150)  # sets the y coordinate of the enemy image
-enemy_x_change = 2
-enemy_y_change = 30
+# Creating enemies
+enemyImg = []
+enemy_x = []
+enemy_y = []
+enemy_x_change = []
+enemy_y_change = []
+num_of_enemies = 6
+
+for i in range(num_of_enemies):
+    enemyImg.append(pygame.image.load('enemy.png'))
+    enemy_x.append(randint(0, 736))  # sets the x coordinate of the enemy image
+    enemy_y.append(randint(50, 150))  # sets the y coordinate of the enemy image
+    enemy_x_change.append(1)
+    enemy_y_change.append(30)
 
 # Creating bullet
 bulletImg = pygame.image.load('bullet.png')
@@ -39,14 +57,16 @@ bullet_x_change = 0
 bullet_y_change = 10
 bullet_state = "ready"  # "ready" - the bullet has not been fired
 
-score = 0
+# #creating explosion
+# explosion_img = pygame.image.load('explosion.png')
+
 
 def player(x, y):
     screen.blit(playerImg, (x, y))  # This renders player image onto screen
 
 
-def enemy(x, y):
-    screen.blit(enemyImg, (x, y))  # This renders enemy image onto screen
+def enemy(x, y, i):
+    screen.blit(enemyImg[i], (x, y))  # This renders enemy image onto screen
 
 
 def fire_bullet(x, y):
@@ -56,6 +76,7 @@ def fire_bullet(x, y):
 
 
 def isCollision(enemy_x, enemy_y, bullet_x, bullet_y):
+    """Determines when there is a collision between bullet and enemy"""
     distance = math.sqrt((enemy_x - bullet_x) ** 2 + (enemy_y - bullet_y) ** 2)
     if distance < 27:
         return True
@@ -104,15 +125,27 @@ while running:
     elif player_x >= 736:
         player_x = 736
 
-    enemy_x += enemy_x_change
-
     # setting movement for enemy
-    if enemy_x <= 0:
-        enemy_x_change = 2
-        enemy_y += enemy_y_change
-    elif enemy_x >= 736:
-        enemy_x_change = -2
-        enemy_y += enemy_y_change
+    for i in range(num_of_enemies):
+        enemy_x[i] += enemy_x_change[i]
+        if enemy_x[i] <= 0:
+            enemy_x_change[i] = 1
+            enemy_y[i] += enemy_y_change[i]
+        elif enemy_x[i] >= 736:
+            enemy_x_change[i] = -1
+            enemy_y[i] += enemy_y_change[i]
+
+        # collision
+        collision = isCollision(enemy_x[i], enemy_y[i], bullet_x, bullet_y)
+        if collision:
+            bullet_y = 480
+            bullet_state = 'ready'
+            score_value += 1
+            print(score_value)
+            enemy_x[i] = randint(0, 736)
+            enemy_y[i] = randint(50, 150)  # respawns enemy when there is a collision
+
+        enemy(enemy_x[i], enemy_y[i], i)
 
     # bullet movement
     if bullet_y <= 0:
@@ -122,18 +155,6 @@ while running:
         fire_bullet(bullet_x, bullet_y)
         bullet_y -= bullet_y_change
 
-    # collision
-    collision = isCollision(enemy_x, enemy_y, bullet_x, bullet_y)
-    if collision:
-        bullet_y = 480
-        bullet_state = 'ready'
-        score += 1
-        print(score)
-        enemy_x = randint(0, 736)
-        enemy_y = randint(50, 150)  # respawns enemy when there is a collision
-
-
-
     player(player_x, player_y)  # This must be after the color fill!
-    enemy(enemy_x, enemy_y)
+    show_score(text_x, text_y)
     pygame.display.update()
