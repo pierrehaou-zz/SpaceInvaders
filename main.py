@@ -1,6 +1,7 @@
 import pygame
 import math
 from random import randint
+from pygame import mixer
 
 # Initialized pygame library
 pygame.init()
@@ -13,6 +14,10 @@ background = pygame.image.load('background.jpg')
 
 # Setting Title
 pygame.display.set_caption("Pierre's Space Invaders")
+
+#Background Music
+mixer.music.load("game_music.wav")
+mixer.music.play(-1)
 
 # Setting icon
 icon = pygame.image.load("spaceship.png")
@@ -110,6 +115,8 @@ while running:
                 if bullet_state is 'fire':  # This ensures you can't fire a bullet if bullet state is fire
                     pass
                 else:
+                    bullet_sound = mixer.Sound("laser.wav")
+                    bullet_sound.play()
                     bullet_x = player_x
                     fire_bullet(bullet_x, bullet_y)
 
@@ -138,6 +145,8 @@ while running:
         # collision
         collision = isCollision(enemy_x[i], enemy_y[i], bullet_x, bullet_y)
         if collision:
+            explosion_sound = mixer.Sound("explosion.wav")
+            explosion_sound.play()
             bullet_y = 480
             bullet_state = 'ready'
             score_value += 1
