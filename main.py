@@ -76,7 +76,7 @@ num_of_enemies = 6
 enemies = [] #creating list to store enemies
 
 for i in range(num_of_enemies): #for loop to create all the enemies
-    i = Enemy(randint(0, 736), randint(-200, 100), 0.25)
+    i = Enemy(randint(0, 736), randint(-200, 100), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
     enemies.append(i)
 
 
