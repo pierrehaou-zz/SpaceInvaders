@@ -10,10 +10,13 @@ from pygame import mixer
 pygame.init()
 
 # created game window
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((772, 600))
 
 # setting the background
-background = pygame.image.load('background.jpg')
+background = pygame.image.load('m_background.jpg')
+background_y = 0
+background_y2 = background.get_height()
+
 
 # Setting Title
 pygame.display.set_caption("Pierre's Space Invaders")
@@ -58,6 +61,7 @@ class Player:
     def draw(self):
         screen.blit(playerImg, (self.x, self.y))
 
+#Creating Enemy Class
 class Enemy:
     def __init__(self, x, y, y_change):
         self.x = x
@@ -76,7 +80,7 @@ num_of_enemies = 6
 enemies = [] #creating list to store enemies
 
 for i in range(num_of_enemies): #for loop to create all the enemies
-    i = Enemy(randint(0, 736), randint(-200, 100), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
+    i = Enemy(randint(0, 708), randint(-200, 100), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
     enemies.append(i)
 
 
@@ -107,16 +111,23 @@ def isCollision(enemy_x, enemy_y, bullet_x, bullet_y):
     else:
         return False
 
+def redraw_background(): #This function redraws the window to make it look like its moving
+    screen.blit(background, (0, background_y))
+    screen.blit(background, (0, background_y2))
 
 # Game Loop
 running = True
 while running:
 
-    # This sets the background, takes RGB as input
-    screen.fill((0, 0, 0))
+    #This block renders a moving background
+    redraw_background()
+    background_y += 1.4
+    background_y2 += 1.4
+    if background_y > background.get_height():
+        background_y = background.get_height() * -1
+    if background_y2 >  background.get_height():
+        background_y2 = background.get_height() * -1
 
-    # setting the background image
-    screen.blit(background, (0, 0))
 
     for event in pygame.event.get():  # This loop cycles through all game events
 
@@ -148,8 +159,8 @@ while running:
     # sets boundaries for the player
     if ship.x <= 0:
         ship.x = 0
-    elif ship.x >= 736:
-        ship.x = 736
+    elif ship.x >= 708:
+        ship.x = 708
 
     # setting movement for enemy
     for i in enemies:
@@ -161,7 +172,9 @@ while running:
         #     game_over_text()
         #     break
 
-        i.y += i.y_change
+        i.y += i.y_change #downward enemy movement
+        if i.y > 600:
+            i.y = randint(-200, 100) #This respawns enemy if they go below screen
 
         # collision
         collision = isCollision(i.x, i.y, bullet_x, bullet_y)
@@ -172,7 +185,7 @@ while running:
             bullet_state = 'ready'
             score_value += 1
             print(score_value)
-            i.x = randint(0, 736)
+            i.x = randint(0, 708)
             i.y = randint(-200, 100)  # respawns enemy when there is a collision
 
         i.draw()
