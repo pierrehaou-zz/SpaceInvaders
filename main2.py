@@ -44,10 +44,27 @@ text_y = 10
 
 #game over text
 over_font = pygame.font.Font('freesansbold.ttf', 64)
+restart_font = pygame.font.Font('freesansbold.ttf', 32)
 
+#game over text function
 def game_over():
     over_text = over_font.render(f"GAME OVER", True, (255, 0, 0))
+    restart_text = restart_font.render(f"Press 'Shift' to play again", True, (255, 0, 0))
     screen.blit(over_text, (200, 250))
+    screen.blit(restart_text, (200, 500))
+
+
+
+
+#resets variables to restart game
+def init():
+    global score_value
+    score_value = 0
+    ship.life = 5
+    ship.y = 480
+    for enemy in enemies:
+        enemy.x = randint(0, 708)
+        enemy.y = randint(-200, 100)
 
 def show_score(x,y):
     score = font.render(f"Score : {score_value}", True, (255, 255, 255))
@@ -151,7 +168,6 @@ for i in range(num_of_enemies): #for loop to create all the enemies
 
 
 
-
 # #creating explosion
 # explosion_img = pygame.image.load('explosion.png')
 
@@ -161,77 +177,90 @@ def redraw_background(): #This function redraws the window to make it look like 
     screen.blit(background, (0, background_y))
     screen.blit(background, (0, background_y2))
 
+
 # Game Loop
-def main():
-    running = True
-    while running:
+running = True
+while running:
 
-        #This block renders a moving background
-        redraw_background()
-        background_y += 1.4
-        background_y2 += 1.4
-        if background_y > background.get_height():
-            background_y = background.get_height() * -1
-        if background_y2 >  background.get_height():
-            background_y2 = background.get_height() * -1
+    #This block renders a moving background
+    redraw_background()
+    background_y += 1.4
+    background_y2 += 1.4
+    if background_y > background.get_height():
+        background_y = background.get_height() * -1
+    if background_y2 >  background.get_height():
+        background_y2 = background.get_height() * -1
 
 
-        for event in pygame.event.get():  # This loop cycles through all game events
+    for event in pygame.event.get():  # This loop cycles through all game events
 
-            # If "red x" is pressed in gui the game loop stops
-            if event.type == pygame.QUIT:
-                running = False
+        # If "red x" is pressed in gui the game loop stops
+        if event.type == pygame.QUIT:
+            running = False
 
-            # Checks if there is a key stroke and if it is left or right
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    ship.x_change = -5
-                elif event.key == pygame.K_RIGHT:
-                    ship.x_change = 5
-                elif event.key == pygame.K_SPACE:
-                    if bullet.bullet_state is 'fire':  # This ensures you can't fire a bullet if bullet state is fire
-                        pass
-                    else:
-                        bullet_sound = mixer.Sound("laser.wav")
-                        bullet_sound.play()
-                        bullet.x = ship.x
-                        bullet.fire_bullet()
+        # Checks if there is a key stroke and if it is left or right
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                ship.x_change = -5
+            elif event.key == pygame.K_RIGHT:
+                ship.x_change = 5
+            elif event.key == pygame.K_SPACE:
+                if bullet.bullet_state is 'fire':  # This ensures you can't fire a bullet if bullet state is fire
+                    pass
+                else:
+                    bullet_sound = mixer.Sound("laser.wav")
+                    bullet_sound.play()
+                    bullet.x = ship.x
+                    bullet.fire_bullet()
+            elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT: #Allows players to restart game
+                if ship.life != 0:
+                    pass
+                else:
+                    init()
 
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or pygame.K_RIGHT:
-                    ship.x_change = 0  # This ensures the ship stops when you lift up the key
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT or pygame.K_RIGHT:
+                ship.x_change = 0  # This ensures the ship stops when you lift up the key
 
-        ship.x += ship.x_change  # updates position of player based on keys pressed
+    ship.x += ship.x_change  # updates position of player based on keys pressed
 
-        # sets boundaries for the player
-        if ship.x <= 0:
-            ship.x = 0
-        elif ship.x >= 708:
-            ship.x = 708
+    # sets boundaries for the player
+    if ship.x <= 0:
+        ship.x = 0
+    elif ship.x >= 708:
+        ship.x = 708
 
-        # setting movement for enemy
-        for i in enemies:
+    # setting movement for enemy
+    for i in enemies:
 
-            #Game over mechanic
+        #Game over mechanic
+        if ship.life == 0:
+            for j in enemies:
+                j.x = 3000
+            ship.y = -300
+
+            game_over()
+
+
+
+
+
+        i.y += i.y_change #downward enemy movement
+        if i.y > 600:
+            i.y = randint(-350, 100) #This respawns enemy if they go below screen
+
+        # player bullet and enemy collision
+        if bullet.collision(i) == None:
+            pass
+        else:
+            score_value += 1
+            enemy_death(i)
+
+        #enemy and player collision
+        if i.collision(ship) == None:
+            pass
+        else:
             if ship.life == 0:
-                 for j in enemies:
-                    j.y = 10000
-                # game_over()
-
-
-            i.y += i.y_change #downward enemy movement
-            if i.y > 600:
-                i.y = randint(-350, 100) #This respawns enemy if they go below screen
-
-            # player bullet and enemy collision
-            if bullet.collision(i) == None:
-                pass
-            else:
-                score_value += 1
-                enemy_death(i)
-
-            #enemy and player collision
-            if i.collision(ship) == None:
                 pass
             else:
                 ship.life -= 1
@@ -239,18 +268,17 @@ def main():
 
 
 
-            i.draw()
+        i.draw()
 
-        # bullet movement
-        if bullet.y <= 0:
-            bullet.y = 480
-            bullet.bullet_state = 'readu'
-        if bullet.bullet_state is "fire":
-            bullet.fire_bullet()
-            bullet.y -= bullet.y_change
+    # bullet movement
+    if bullet.y <= 0:
+        bullet.y = 480
+        bullet.bullet_state = 'readu'
+    if bullet.bullet_state is "fire":
+        bullet.fire_bullet()
+        bullet.y -= bullet.y_change
 
-main()
-ship.draw()
-show_life(650, 10, ship.life)
-show_score(text_x, text_y)
-pygame.display.update()
+    ship.draw()
+    show_life(650, 10, ship.life)
+    show_score(text_x, text_y)
+    pygame.display.update()
