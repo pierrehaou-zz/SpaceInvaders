@@ -35,7 +35,7 @@ icon = pygame.image.load("spaceship.png")
 pygame.display.set_icon(icon)
 
 # Score
-score_value = 0
+score_value = None
 font = pygame.font.Font('freesansbold.ttf', 32)
 text_x = 10
 text_y = 10
@@ -46,6 +46,13 @@ text_y = 10
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 restart_font = pygame.font.Font('freesansbold.ttf', 32)
 
+#Start game text
+start_font = pygame.font.Font('freesansbold.ttf', 32)
+
+def redraw_background(): #This function redraws the window to make it look like its moving
+    screen.blit(background, (0, background_y))
+    screen.blit(background, (0, background_y2))
+
 #game over text function
 def game_over():
     over_text = over_font.render(f"GAME OVER", True, (255, 0, 0))
@@ -53,7 +60,9 @@ def game_over():
     screen.blit(over_text, (200, 250))
     screen.blit(restart_text, (200, 500))
 
-
+def start_game():
+    start_text = start_font.render(f"Press 'Shift' to play", True, (255, 0, 0))
+    screen.blit(start_text, (200, 250))
 
 
 #resets variables to restart game
@@ -65,6 +74,7 @@ def init():
     for enemy in enemies:
         enemy.x = randint(0, 708)
         enemy.y = randint(-200, 100)
+    bullet.bullet_state = "ready"
 
 def show_score(x,y):
     score = font.render(f"Score : {score_value}", True, (255, 255, 255))
@@ -84,7 +94,7 @@ def collide(obj1, obj2):
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y))
 
 
-def enemy_death(obj):
+def enemy_death(obj): #when an enemy is killed
     explosion_sound = mixer.Sound("explosion.wav")
     explosion_sound.play()
     bullet.y = 480
@@ -92,7 +102,7 @@ def enemy_death(obj):
     obj.x = randint(0, 708)
     obj.y = randint(-200, 100)  # respawns enemy when there is a collision
 
-def enemy_attack(obj):
+def enemy_attack(obj): #when the enemy lands an attack on player
     explosion_sound = mixer.Sound("explosion.wav")
     explosion_sound.play()
     obj.x = randint(0, 708)
@@ -163,19 +173,11 @@ num_of_enemies = 6
 enemies = [] #creating list to store enemies
 
 for i in range(num_of_enemies): #for loop to create all the enemies
-    i = Enemy(randint(0, 708), randint(-200, 100), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
+    i = Enemy(randint(0, 720 ), randint(-200, 100), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
     enemies.append(i)
 
 
 
-# #creating explosion
-# explosion_img = pygame.image.load('explosion.png')
-
-
-
-def redraw_background(): #This function redraws the window to make it look like its moving
-    screen.blit(background, (0, background_y))
-    screen.blit(background, (0, background_y2))
 
 
 # Game Loop
@@ -213,10 +215,10 @@ while running:
                     bullet.x = ship.x
                     bullet.fire_bullet()
             elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT: #Allows players to restart game
-                if ship.life != 0:
-                    pass
-                else:
+                if ship.life == 0 or score_value == None:
                     init()
+                else:
+                    pass
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or pygame.K_RIGHT:
@@ -230,16 +232,24 @@ while running:
     elif ship.x >= 708:
         ship.x = 708
 
+    # start game mechanic
+    if score_value == None:
+        for j in enemies:  # moves enemies off the screen
+            j.x = 3000
+        start_game()
+
     # setting movement for enemy
     for i in enemies:
 
         #Game over mechanic
         if ship.life == 0:
-            for j in enemies:
+            for j in enemies: #moves enemies off the screen
                 j.x = 3000
-            ship.y = -300
+            ship.y = -300 #moves ship off screen
+            bullet.bullet_state = "fire"
 
             game_over()
+
 
 
 
@@ -277,6 +287,7 @@ while running:
     if bullet.bullet_state is "fire":
         bullet.fire_bullet()
         bullet.y -= bullet.y_change
+
 
     ship.draw()
     show_life(650, 10, ship.life)
