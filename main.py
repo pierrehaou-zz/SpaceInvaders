@@ -51,12 +51,23 @@ def show_score(x,y):
     score = font.render(f"Score : {score_value}", True, (255, 255, 255))
     screen.blit(score, (x, y))
 
+#creating collide mechanics
+
+def collide(obj1, obj2):
+    offset_x = obj2.x - obj1.x
+    offset_y = obj2.y - obj1.y
+    # If they collide it will return (x,y) where thats the point of collision
+    return obj1.mask.overlap(obj2.mask, (offset_x, offset_y)) != None
+
+
 # Creating Player class:
 class Player:
     def __init__(self, x, y, x_change):
         self.x = x
         self.y = y
         self.x_change = x_change
+        self.playerImg = playerImg
+        self.mask = pygame.mask.from_surface(self.playerImg)
 
     def draw(self):
         screen.blit(playerImg, (self.x, self.y))
@@ -71,6 +82,28 @@ class Enemy:
     def draw(self):
         screen.blit(enemyImg, (self.x, self.y))
 
+#Creating bullet class
+class Bullet:
+
+    def __init__(self, x, y, x_change, y_change, bullet_state):
+        self.x = x
+        self.y = y
+        self.x_change = x_change
+        self.y_change = y_change
+        self.bullet_state = bullet_state
+        self.bulletImg = pygame.image.load('bullet.png')
+        self.mask = pygame.mask.from_surface(self.bulletImg)
+
+    def fire_bullet(self):
+        global bullet_state
+        self.bullet_state = "fire"
+        screen.blit(self.bulletImg, (self.x + 16, self.y + 10))  # setting the coordinates for the bullet when fired
+
+    def collision(self, obj):
+        return collide(obj, self)
+
+#Creating bullet
+bullet = Bullet(0, 480, 0, 10, "ready")
 
 #Creating player
 ship = Player(370, 480, 0)
@@ -85,22 +118,11 @@ for i in range(num_of_enemies): #for loop to create all the enemies
 
 
 
-# Creating bullet
-bulletImg = pygame.image.load('bullet.png')
-bullet_x = 0
-bullet_y = 480
-bullet_x_change = 0
-bullet_y_change = 10
-bullet_state = "ready"  # "ready" - the bullet has not been fired
 
 # #creating explosion
 # explosion_img = pygame.image.load('explosion.png')
 
 
-def fire_bullet(x, y):
-    global bullet_state
-    bullet_state = "fire"
-    screen.blit(bulletImg, (x + 16, y + 10))  # setting the coordinates for the bullet when fired
 
 
 def isCollision(enemy_x, enemy_y, bullet_x, bullet_y):
@@ -142,13 +164,13 @@ while running:
             elif event.key == pygame.K_RIGHT:
                 ship.x_change = 5
             elif event.key == pygame.K_SPACE:
-                if bullet_state is 'fire':  # This ensures you can't fire a bullet if bullet state is fire
+                if bullet.bullet_state is 'fire':  # This ensures you can't fire a bullet if bullet state is fire
                     pass
                 else:
                     bullet_sound = mixer.Sound("laser.wav")
                     bullet_sound.play()
-                    bullet_x = ship.x
-                    fire_bullet(bullet_x, bullet_y)
+                    bullet.x = ship.x
+                    bullet.fire_bullet()
 
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT or pygame.K_RIGHT:
@@ -177,26 +199,26 @@ while running:
             i.y = randint(-200, 100) #This respawns enemy if they go below screen
 
         # collision
-        collision = isCollision(i.x, i.y, bullet_x, bullet_y)
-        if collision:
-            explosion_sound = mixer.Sound("explosion.wav")
-            explosion_sound.play()
-            bullet_y = 480
-            bullet_state = 'ready'
-            score_value += 1
-            print(score_value)
-            i.x = randint(0, 708)
-            i.y = randint(-200, 100)  # respawns enemy when there is a collision
+        # collision = isCollision(i.x, i.y, bullet_x, bullet_y)
+        # if collision:
+        #     explosion_sound = mixer.Sound("explosion.wav")
+        #     explosion_sound.play()
+        #     bullet_y = 480
+        #     bullet_state = 'ready'
+        #     score_value += 1
+        #     print(score_value)
+        #     i.x = randint(0, 708)
+        #     i.y = randint(-200, 100)  # respawns enemy when there is a collision
 
         i.draw()
 
     # bullet movement
-    if bullet_y <= 0:
-        bullet_y = 480
-        bullet_state = 'readu'
-    if bullet_state is "fire":
-        fire_bullet(bullet_x, bullet_y)
-        bullet_y -= bullet_y_change
+    if bullet.y <= 0:
+        bullet.y = 480
+        bullet.bullet_state = 'readu'
+    if bullet.bullet_state is "fire":
+        bullet.fire_bullet()
+        bullet.y -= bullet.y_change
 
 
     ship.draw()
