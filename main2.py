@@ -28,7 +28,7 @@ mixer.music.play(-1)
 #Loading Images
 playerImg = pygame.image.load('aircraft.png')
 enemyImg = pygame.image.load('enemy.png')
-
+advanced_enemyImg = pygame.image.load('advanced_enemy.png')
 
 # Setting icon
 icon = pygame.image.load("spaceship.png")
@@ -73,7 +73,10 @@ def init():
     ship.y = 480
     for enemy in enemies:
         enemy.x = randint(0, 708)
-        enemy.y = randint(-200, 100)
+        enemy.y = randint(-200, 0)
+    for enemy in advanced_enemies:
+        enemy.x = randint(0, 708)
+        enemy.y = randint(-200, 0)
     bullet.bullet_state = "ready"
 
 def show_score(x,y):
@@ -100,13 +103,13 @@ def enemy_death(obj): #when an enemy is killed
     bullet.y = 480
     bullet.bullet_state = 'ready'
     obj.x = randint(0, 708)
-    obj.y = randint(-200, 100)  # respawns enemy when there is a collision
+    obj.y = randint(-200, 0)  # respawns enemy when there is a collision
 
 def enemy_attack(obj): #when the enemy lands an attack on player
     explosion_sound = mixer.Sound("explosion.wav")
     explosion_sound.play()
     obj.x = randint(0, 708)
-    obj.y = randint(-200, 100)  # respawns enemy when there is a collision
+    obj.y = randint(-200, 0)  # respawns enemy when there is a collision
 
 
 # Creating Player class:
@@ -137,6 +140,22 @@ class Enemy:
     def draw(self):
         screen.blit(self.enemyImg, (self.x, self.y))
 
+class Advanced_Enemy:
+    def __init__(self, x, y, y_change):
+        self.x = x
+        self.y = y
+        self.y_change = y_change
+        self.x_change = 0
+        self.advanced_enemyImg = advanced_enemyImg
+        self.mask = pygame.mask.from_surface(self.advanced_enemyImg)
+
+    def collision(self, obj):
+        return collide(self, obj)
+
+    def draw(self):
+        screen.blit(self.advanced_enemyImg, (self.x, self.y))
+
+
 #Creating bullet class
 class Bullet:
 
@@ -163,7 +182,7 @@ class Bullet:
 
 
 #Creating bullet
-bullet = Bullet(0, 480, 0, 10, "ready")
+bullet = Bullet(370, 480, 0, 10, "ready")
 
 #Creating player
 ship = Player(370, 480, 0)
@@ -173,10 +192,15 @@ num_of_enemies = 6
 enemies = [] #creating list to store enemies
 
 for i in range(num_of_enemies): #for loop to create all the enemies
-    i = Enemy(randint(0, 720 ), randint(-200, 100), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
+    i = Enemy(randint(0, 720 ), randint(-200, 0), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
     enemies.append(i)
 
+#Creating advanced enemies
+advanced_enemies = [] #creating list to store enemies
 
+for i in range(2): #for loop to create all the enemies
+    i = Advanced_Enemy(randint(0, 720 ), randint(-200, 0), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
+    advanced_enemies.append(i)
 
 
 
@@ -236,6 +260,8 @@ while running:
     if score_value == None:
         for j in enemies:  # moves enemies off the screen
             j.x = 3000
+        for i in advanced_enemies:
+            i.x = 5000
         start_game()
 
     # setting movement for enemy
@@ -246,13 +272,8 @@ while running:
             for j in enemies: #moves enemies off the screen
                 j.x = 3000
             ship.y = -300 #moves ship off screen
-            bullet.bullet_state = "fire"
 
             game_over()
-
-
-
-
 
 
         i.y += i.y_change #downward enemy movement
@@ -277,6 +298,48 @@ while running:
                 enemy_attack(i)
 
 
+
+        i.draw()
+
+    # setting movement for advanced enemy
+    for i in advanced_enemies:
+
+        # Game over mechanic
+        if ship.life == 0:
+            for j in advanced_enemies:  # moves enemies off the screen
+                j.x = 3000
+            ship.y = -300  # moves ship off screen
+
+            game_over()
+
+        #Advanced Enemy tracking system
+        if i.x < ship.x:
+            i.x_change = 0.25
+        elif i.x > ship.x:
+            i.x_change = -0.25
+
+        # downward enemy movement
+        i.x += i.x_change
+        i.y += i.y_change
+        if i.y > 600:
+            i.y = randint(-350, 100)  # This respawns enemy if they go below screen
+
+        # player bullet and enemy collision
+        if bullet.collision(i) == None:
+            pass
+        else:
+            score_value += 1
+            enemy_death(i)
+
+        # enemy and player collision
+        if i.collision(ship) == None:
+            pass
+        else:
+            if ship.life == 0:
+                pass
+            else:
+                ship.life -= 1
+                enemy_attack(i)
 
         i.draw()
 
