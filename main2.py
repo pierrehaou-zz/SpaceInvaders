@@ -3,9 +3,6 @@ import math
 from random import randint
 from pygame import mixer
 
-
-
-
 # Initialized pygame library
 pygame.init()
 
@@ -17,15 +14,14 @@ background = pygame.image.load('m_background.jpg')
 background_y = 0
 background_y2 = background.get_height()
 
-
 # Setting Title
 pygame.display.set_caption("Pierre's Space Invaders")
 
-#Background Music
+# Background Music
 mixer.music.load("game_music.wav")
 mixer.music.play(-1)
 
-#Loading Images
+# Loading Images
 playerImg = pygame.image.load('aircraft.png')
 enemyImg = pygame.image.load('enemy.png')
 advanced_enemyImg = pygame.image.load('advanced_enemy.png')
@@ -40,32 +36,33 @@ font = pygame.font.Font('freesansbold.ttf', 32)
 text_x = 10
 text_y = 10
 
-
-
-#game over text
+# game over text
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 restart_font = pygame.font.Font('freesansbold.ttf', 32)
 
-#Start game text
+# Start game text
 start_font = pygame.font.Font('freesansbold.ttf', 32)
 
-def redraw_background(): #This function redraws the window to make it look like its moving
+
+def redraw_background():  # This function redraws the window to make it look like its moving
     screen.blit(background, (0, background_y))
     screen.blit(background, (0, background_y2))
 
-#game over text function
+
+# game over text function
 def game_over():
     over_text = over_font.render(f"GAME OVER", True, (255, 0, 0))
     restart_text = restart_font.render(f"Press 'Shift' to play again", True, (255, 0, 0))
     screen.blit(over_text, (200, 250))
     screen.blit(restart_text, (200, 500))
 
+
 def start_game():
     start_text = start_font.render(f"Press 'Shift' to play", True, (255, 0, 0))
     screen.blit(start_text, (200, 250))
 
 
-#resets variables to restart game
+# resets variables to restart game
 def init():
     global score_value
     score_value = 0
@@ -79,15 +76,18 @@ def init():
         enemy.y = randint(-200, 0)
     bullet.bullet_state = "ready"
 
-def show_score(x,y):
+
+def show_score(x, y):
     score = font.render(f"Score : {score_value}", True, (255, 255, 255))
     screen.blit(score, (x, y))
 
-def show_life(x,y, life):
+
+def show_life(x, y, life):
     score = font.render(f"Life : {life}", True, (255, 255, 255))
     screen.blit(score, (x, y))
 
-#creating collide functions
+
+# creating collide functions
 
 def collide(obj1, obj2):
     offset_x = int(obj2.x - obj1.x)
@@ -97,19 +97,26 @@ def collide(obj1, obj2):
     return obj1.mask.overlap(obj2.mask, (offset_x, offset_y))
 
 
-def enemy_death(obj): #when an enemy is killed
+def enemy_death(obj):  # when an enemy is killed
     explosion_sound = mixer.Sound("explosion.wav")
     explosion_sound.play()
     bullet.y = 480
+    bullet.x = 1000
     bullet.bullet_state = 'ready'
     obj.x = randint(0, 708)
     obj.y = randint(-200, 0)  # respawns enemy when there is a collision
 
-def enemy_attack(obj): #when the enemy lands an attack on player
+
+def enemy_attack(obj):  # when the enemy lands an attack on player
     explosion_sound = mixer.Sound("explosion.wav")
     explosion_sound.play()
     obj.x = randint(0, 708)
     obj.y = randint(-200, 0)  # respawns enemy when there is a collision
+
+
+
+
+
 
 
 # Creating Player class:
@@ -125,7 +132,8 @@ class Player:
     def draw(self):
         screen.blit(playerImg, (self.x, self.y))
 
-#Creating Enemy Class
+
+# Creating Enemy Class
 class Enemy:
     def __init__(self, x, y, y_change):
         self.x = x
@@ -139,6 +147,7 @@ class Enemy:
 
     def draw(self):
         screen.blit(self.enemyImg, (self.x, self.y))
+
 
 class Advanced_Enemy:
     def __init__(self, x, y, y_change):
@@ -156,7 +165,7 @@ class Advanced_Enemy:
         screen.blit(self.advanced_enemyImg, (self.x, self.y))
 
 
-#Creating bullet class
+# Creating bullet class
 class Bullet:
 
     def __init__(self, x, y, x_change, y_change, bullet_state):
@@ -173,50 +182,45 @@ class Bullet:
         self.bullet_state = "fire"
         screen.blit(self.bulletImg, (self.x + 16, self.y + 10))  # setting the coordinates for the bullet when fired
 
-
-
     def collision(self, obj):
         return collide(self, obj)
 
 
-
-
-#Creating bullet
-bullet = Bullet(370, 480, 0, 10, "ready")
-
-#Creating player
+# Creating player
 ship = Player(370, 480, 0)
 
-#Creating enemies
-num_of_enemies = 6
-enemies = [] #creating list to store enemies
+# Creating bullet
+bullet = Bullet(1000, 1000, 0, 10, "ready")
 
-for i in range(num_of_enemies): #for loop to create all the enemies
-    i = Enemy(randint(0, 720 ), randint(-200, 0), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
+# Creating enemies
+num_of_enemies = 3
+enemies = []  # creating list to store enemies
+
+for i in range(num_of_enemies):  # for loop to create all the enemies
+    i = Enemy(randint(0, 720), randint(-200, 0),
+              1.5)  # These integers spawn enemies "above" the window. .25 is a good speed
     enemies.append(i)
 
-#Creating advanced enemies
-advanced_enemies = [] #creating list to store enemies
-
-for i in range(2): #for loop to create all the enemies
-    i = Advanced_Enemy(randint(0, 720 ), randint(-200, 0), 0.25) #These integers spawn enemies "above" the window. .25 is a good speed
+# Creating advanced enemies
+advanced_enemies = []  # creating list to store enemies
+num_advanced_enemies = 0
+for i in range(num_advanced_enemies):  # for loop to create all the enemies
+    i = Advanced_Enemy(randint(0, 720), randint(-200, 0),
+                       1.5)  # These integers spawn enemies "above" the window. .25 is a good speed
     advanced_enemies.append(i)
-
-
 
 # Game Loop
 running = True
 while running:
 
-    #This block renders a moving background
+    # This block renders a moving background
     redraw_background()
     background_y += 1.4
     background_y2 += 1.4
     if background_y > background.get_height():
         background_y = background.get_height() * -1
-    if background_y2 >  background.get_height():
+    if background_y2 > background.get_height():
         background_y2 = background.get_height() * -1
-
 
     for event in pygame.event.get():  # This loop cycles through all game events
 
@@ -227,9 +231,9 @@ while running:
         # Checks if there is a key stroke and if it is left or right
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
-                ship.x_change = -5
+                ship.x_change = -3
             elif event.key == pygame.K_RIGHT:
-                ship.x_change = 5
+                ship.x_change = 3
             elif event.key == pygame.K_SPACE:
                 if bullet.bullet_state is 'fire':  # This ensures you can't fire a bullet if bullet state is fire
                     pass
@@ -238,7 +242,7 @@ while running:
                     bullet_sound.play()
                     bullet.x = ship.x
                     bullet.fire_bullet()
-            elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT: #Allows players to restart game
+            elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:  # Allows players to restart game
                 if ship.life == 0 or score_value == None:
                     init()
                 else:
@@ -267,18 +271,17 @@ while running:
     # setting movement for enemy
     for i in enemies:
 
-        #Game over mechanic
+        # Game over mechanic
         if ship.life == 0:
-            for j in enemies: #moves enemies off the screen
+            for j in enemies:  # moves enemies off the screen
                 j.x = 3000
-            ship.y = -300 #moves ship off screen
+            ship.y = -300  # moves ship off screen
 
             game_over()
 
-
-        i.y += i.y_change #downward enemy movement
+        i.y += i.y_change  # downward enemy movement
         if i.y > 600:
-            i.y = randint(-350, 100) #This respawns enemy if they go below screen
+            i.y = randint(-350, 100)  # This respawns enemy if they go below screen
 
         # player bullet and enemy collision
         if bullet.collision(i) == None:
@@ -287,7 +290,7 @@ while running:
             score_value += 1
             enemy_death(i)
 
-        #enemy and player collision
+        # enemy and player collision
         if i.collision(ship) == None:
             pass
         else:
@@ -296,7 +299,6 @@ while running:
             else:
                 ship.life -= 1
                 enemy_attack(i)
-
 
 
         i.draw()
@@ -312,7 +314,7 @@ while running:
 
             game_over()
 
-        #Advanced Enemy tracking system
+        # Advanced Enemy tracking system
         if i.x < ship.x:
             i.x_change = 0.25
         elif i.x > ship.x:
@@ -350,7 +352,6 @@ while running:
     if bullet.bullet_state is "fire":
         bullet.fire_bullet()
         bullet.y -= bullet.y_change
-
 
     ship.draw()
     show_life(650, 10, ship.life)
