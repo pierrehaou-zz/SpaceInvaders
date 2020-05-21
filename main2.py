@@ -36,6 +36,11 @@ font = pygame.font.Font('freesansbold.ttf', 32)
 text_x = 10
 text_y = 10
 
+#Level Up Sound
+level_sound = mixer.Sound("level_up.wav")
+sound = False #sets the sound state so next level does not repeat
+
+
 # game over text
 over_font = pygame.font.Font('freesansbold.ttf', 64)
 restart_font = pygame.font.Font('freesansbold.ttf', 32)
@@ -400,19 +405,44 @@ while running:
         bullet.fire_bullet()
         bullet.y -= bullet.y_change
 
-    # Renders the game level based on the score
+    # Renders the game level based on the score and plays next level sounds
     if score_value == None:
         pass
     elif score_value > 14 and score_value < 29:
         wave_text("Level 1")
+        if sound is True:
+            pass
+        else:
+            level_sound.play()
+            sound = True
     elif score_value > 29 and score_value < 49:
         wave_text("Level 2")
+        if sound is False:
+            pass
+        else:
+            level_sound.play()
+            sound = False
     elif score_value > 49 and score_value < 69:
         wave_text("Level 3")
+        if sound is True:
+            pass
+        else:
+            level_sound.play()
+            sound = True
     elif score_value > 69 and score_value < 99:
         wave_text("Level 4")
+        if sound is False:
+            pass
+        else:
+            level_sound.play()
+            sound = False
     elif score_value > 99:
         wave_text("You weren't supposed to get this far...")
+        if sound is True:
+            pass
+        else:
+            level_sound.play()
+            sound = True
 
     ship.draw()
     show_life(650, 10, ship.life)
