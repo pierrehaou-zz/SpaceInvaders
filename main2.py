@@ -43,11 +43,16 @@ restart_font = pygame.font.Font('freesansbold.ttf', 32)
 # Start game text
 start_font = pygame.font.Font('freesansbold.ttf', 32)
 
+#Enemy wave font
+wave_font = pygame.font.Font('freesansbold.ttf', 32)
 
 def redraw_background():  # This function redraws the window to make it look like its moving
     screen.blit(background, (0, background_y))
     screen.blit(background, (0, background_y2))
 
+def wave_text(current_wave):
+    text = font.render(f"{current_wave}", True, (255, 0, 0))
+    screen.blit(text, (10, 50))
 
 # game over text function
 def game_over():
@@ -56,7 +61,7 @@ def game_over():
     screen.blit(over_text, (200, 250))
     screen.blit(restart_text, (200, 500))
 
-
+#start game text
 def start_game():
     start_text = start_font.render(f"Press 'Shift' to play", True, (255, 0, 0))
     screen.blit(start_text, (200, 250))
@@ -98,7 +103,7 @@ def collide(obj1, obj2):
 
 
 def enemy_death(obj):  # when an enemy is killed
-    explosion_sound = mixer.Sound("explosion.wav")
+    explosion_sound = mixer.Sound("better_explosion.wav")
     explosion_sound.play()
     bullet.y = 480
     bullet.x = 1000
@@ -108,15 +113,32 @@ def enemy_death(obj):  # when an enemy is killed
 
 
 def enemy_attack(obj):  # when the enemy lands an attack on player
-    explosion_sound = mixer.Sound("explosion.wav")
+    explosion_sound = mixer.Sound("player_damage2.wav")
     explosion_sound.play()
     obj.x = randint(0, 708)
     obj.y = randint(-200, 0)  # respawns enemy when there is a collision
 
 
+# function to add the number of enemies
+def more_enemies(num):
+    enemies = []  # creating list to store enemies
+
+    for i in range(num):  # for loop to create all the enemies
+        i = Enemy(randint(0, 720), randint(-200, 0),
+                  0.5)  # These integers spawn enemies "above" the window. .25 is a good speed
+        enemies.append(i)
+    return enemies
 
 
+# function to add the number of advanced enemies
+def more_advanced_enemies(num):
+    enemies = []  # creating list to store enemies
 
+    for i in range(num):  # for loop to create all the enemies
+        i = Advanced_Enemy(randint(0, 720), randint(-200, 0),
+                           1)  # These integers spawn enemies "above" the window. .25 is a good speed
+        enemies.append(i)
+    return enemies
 
 
 # Creating Player class:
@@ -193,20 +215,20 @@ ship = Player(370, 480, 0)
 bullet = Bullet(1000, 1000, 0, 10, "ready")
 
 # Creating enemies
-num_of_enemies = 3
+num_of_enemies = 5
 enemies = []  # creating list to store enemies
 
 for i in range(num_of_enemies):  # for loop to create all the enemies
     i = Enemy(randint(0, 720), randint(-200, 0),
-              1.5)  # These integers spawn enemies "above" the window. .25 is a good speed
+              0.5)  # These integers spawn enemies "above" the window. .25 is a good speed
     enemies.append(i)
 
 # Creating advanced enemies
 advanced_enemies = []  # creating list to store enemies
-num_advanced_enemies = 0
+num_advanced_enemies = 1
 for i in range(num_advanced_enemies):  # for loop to create all the enemies
     i = Advanced_Enemy(randint(0, 720), randint(-200, 0),
-                       1.5)  # These integers spawn enemies "above" the window. .25 is a good speed
+                       1)  # These integers spawn enemies "above" the window. .25 is a good speed
     advanced_enemies.append(i)
 
 # Game Loop
@@ -245,6 +267,8 @@ while running:
             elif event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:  # Allows players to restart game
                 if ship.life == 0 or score_value == None:
                     init()
+                    enemies = more_enemies(5)
+                    advanced_enemies = more_advanced_enemies(1)
                 else:
                     pass
 
@@ -300,6 +324,14 @@ while running:
                 ship.life -= 1
                 enemy_attack(i)
 
+        # Increases difficulty as player score increases
+        if score_value == None:
+            pass
+        elif i.y > 772 or i.y < 772:
+            if score_value > 49 and len(enemies) < 6:  # the len piece ensures this if condition is ran only once
+                enemies = more_enemies(10)
+            elif score_value > 99 and len(enemies) < 15:
+                enemies = more_enemies(15)
 
         i.draw()
 
@@ -343,6 +375,21 @@ while running:
                 ship.life -= 1
                 enemy_attack(i)
 
+        # Adds advanced enemies as score increases
+        if score_value == None:
+            pass
+        elif i.y > 772 or i.y < 772:
+            if score_value > 14 and len(advanced_enemies) < 2:  # the len piece ensures this if condition is ran only once
+                advanced_enemies = more_advanced_enemies(2)
+            elif score_value > 49 and len(advanced_enemies) < 5:
+                advanced_enemies = more_advanced_enemies(5)
+            elif score_value > 69 and len(advanced_enemies) < 10:
+                advanced_enemies = more_advanced_enemies(10)
+            elif score_value > 99 and len(advanced_enemies) < 15:
+                advanced_enemies = more_advanced_enemies(15)
+
+
+
         i.draw()
 
     # bullet movement
@@ -352,6 +399,20 @@ while running:
     if bullet.bullet_state is "fire":
         bullet.fire_bullet()
         bullet.y -= bullet.y_change
+
+    # Renders the game level based on the score
+    if score_value == None:
+        pass
+    elif score_value > 14 and score_value < 29:
+        wave_text("Level 1")
+    elif score_value > 29 and score_value < 49:
+        wave_text("Level 2")
+    elif score_value > 49 and score_value < 69:
+        wave_text("Level 3")
+    elif score_value > 69 and score_value < 99:
+        wave_text("Level 4")
+    elif score_value > 99:
+        wave_text("You weren't supposed to get this far...")
 
     ship.draw()
     show_life(650, 10, ship.life)
