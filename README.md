@@ -13,7 +13,9 @@ Note: This was developed in Python 3
 
 # Contact Information
 Thanks for checking out this project! If you’d like to contact with me, my information is below!
+
 Name: Pierre Haou
+
 Email: pierrehaou@gmail.com
 
 
