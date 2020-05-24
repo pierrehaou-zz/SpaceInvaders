@@ -12,7 +12,7 @@ Note: This was developed in Python 3
 # Demo 
 
 # Contact Information
-Thanks for checking out this project! If you’d like to contact with me, my information is below!
+Thanks for checking out this project! If you’d like to connect with me, my information is below!
 
 Name: Pierre Haou
 
